@@ -1,278 +1,306 @@
-# Event Management & Ticket Booking Application
+# Apex - Event Management & Ticket Booking App
 
-A full-stack event management platform with Flutter mobile frontend and Spring Boot backend.
+A full-stack event management platform for discovering events, booking tickets, and managing events with real-time analytics.
 
-## Project Overview
-
-This is an SDP Lab Project built incrementally across 8 phases. Phase 0 establishes the foundational architecture and verifies end-to-end connectivity.
-
-## Tech Stack
-
-### Frontend
-- **Flutter** + **Dart**
-- **GetX** - State management, routing, and dependency injection
-- **HTTP** - API communication
+## 🚀 Tech Stack
 
 ### Backend
-- **Spring Boot** (Java 21)
-- **Spring Security** - Authentication and authorization
-- **Spring Data JPA** - Database access
-- **MySQL** - Relational database
+- **Spring Boot 3.2.0** (Java 21)
 - **Maven** - Build tool
+- **Spring Security** - JWT authentication
+- **Spring Data JPA** - Database ORM
+- **MySQL** - Relational database
+- **Razorpay** - Payment integration
+- **REST API** - JSON over HTTPS
+
+### Frontend
+- **Flutter 3.47.0** (Dart 3.13.0)
+- **GetX** - State management, routing, DI
+- **HTTP** - API client
+- **Firebase Cloud Messaging** - Push notifications
+- **QR Flutter** - QR code generation
+- **Mobile Scanner** - QR code scanning
+- **FL Chart** - Analytics visualization
 
 ### Architecture
 ```
-Flutter + GetX
-    ↓
-REST API (JSON)
-    ↓
-Spring Boot
-    ↓
-Spring Data JPA
-    ↓
-MySQL
+Flutter (GetX) → REST API → Spring Boot → MySQL
 ```
 
-## Project Structure
+## ✨ Features
+
+### Phase 0 - Foundation ✅
+- Spring Boot backend with Maven
+- Flutter frontend with GetX
+- MySQL database integration
+- API connectivity verification
+
+### Phase 1 - Authentication (Upcoming)
+- User registration & login
+- JWT token-based authentication
+- Password encryption (BCrypt)
+- Role-based access (Attendee/Organizer/Admin)
+- User profile management
+
+### Phase 2 - Event Management
+- Create and manage events
+- Event browsing and search
+- Category-based filtering
+- Image upload for events
+- Event capacity tracking
+
+### Phase 3 - Ticket Booking
+- Standard ticket booking
+- Quantity selection
+- Live capacity updates
+- Booking history
+- Concurrent booking safety
+
+### Phase 4 - Payments & QR Entry
+- Razorpay payment integration
+- Server-side payment verification
+- QR code generation (signed tokens)
+- QR code scanning for check-in
+- Duplicate scan prevention
+
+### Phase 5 - Dashboards
+- Organizer dashboard
+  - Bookings analytics
+  - Revenue tracking
+  - Check-in statistics
+  - Real-time updates
+- Admin panel
+  - User management
+  - Event moderation
+  - Platform monitoring
+
+### Phase 6 - Engagement
+- Push notifications (FCM)
+- Referral system
+- Rewards wallet
+- Points ledger
+- Apply points at checkout
+
+### Phase 7 - Analytics & AI
+- Event reviews and ratings
+- Sales analytics
+- Attendance tracking
+- AI-powered event recommendations
+
+## 📁 Project Structure
 
 ```
-event-management/
+apex/
+├── backend/                # Spring Boot Backend
+│   ├── src/main/java/com/eventmanagement/
+│   │   ├── controller/    # REST controllers
+│   │   ├── service/       # Business logic
+│   │   ├── repository/    # Data access
+│   │   ├── entity/        # JPA entities
+│   │   ├── dto/           # Data transfer objects
+│   │   ├── config/        # Configuration
+│   │   └── exception/     # Exception handling
+│   ├── src/main/resources/
+│   │   └── application.properties
+│   └── pom.xml
 │
-├── backend/                    # Spring Boot backend
-│   ├── src/
-│   │   └── main/
-│   │       ├── java/com/eventmanagement/
-│   │       │   ├── controller/       # REST controllers
-│   │       │   ├── service/          # Business logic
-│   │       │   ├── repository/       # Data access
-│   │       │   ├── entity/           # JPA entities
-│   │       │   ├── dto/              # Data transfer objects
-│   │       │   ├── config/           # Configuration classes
-│   │       │   └── exception/        # Exception handling
-│   │       └── resources/
-│   │           └── application.properties
-│   ├── pom.xml
-│   └── database_setup.sql
-│
-└── frontend/                   # Flutter frontend
+└── frontend/              # Flutter Frontend
     ├── lib/
-    │   ├── bindings/          # GetX dependency bindings
-    │   ├── controllers/       # GetX controllers
-    │   ├── views/             # UI screens
-    │   ├── services/          # API client and services
-    │   ├── models/            # Data models
-    │   ├── routes/            # Navigation routes
-    │   ├── widgets/           # Reusable widgets
-    │   └── main.dart
+    │   ├── bindings/     # GetX dependency injection
+    │   ├── controllers/  # GetX controllers
+    │   ├── views/        # UI screens
+    │   ├── services/     # API client
+    │   ├── models/       # Data models
+    │   ├── routes/       # Navigation
+    │   └── widgets/      # Reusable components
     └── pubspec.yaml
 ```
 
-## Prerequisites
+## 🛠️ Setup Instructions
 
-- **Java 21** or higher
-- **Maven** 3.6+
-- **MySQL** 8.0+
-- **Flutter** 3.0+
-- **Dart** 3.0+
-- **Android Studio** (for running Flutter app)
+### Prerequisites
+- Java 21
+- Maven 3.6+
+- MySQL 8.0+
+- Flutter 3.0+
+- Android Studio (for Android development)
 
-## Setup Instructions
+### Backend Setup
 
-### 1. Database Setup
-
-1. Start MySQL server
-2. Create the database:
-
-```bash
-mysql -u root -p < backend/database_setup.sql
-```
-
-Or manually:
+1. **Create MySQL database**
 ```sql
-CREATE DATABASE IF NOT EXISTS event_management;
+CREATE DATABASE event_management;
 ```
 
-3. Update database credentials in `backend/src/main/resources/application.properties` if needed:
-
+2. **Configure database** in `backend/src/main/resources/application.properties`:
 ```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/event_management
 spring.datasource.username=root
 spring.datasource.password=your_password
 ```
 
-### 2. Backend Setup
-
-1. Navigate to backend directory:
+3. **Build and run**
 ```bash
 cd backend
-```
-
-2. Build the project:
-```bash
 mvn clean install
-```
-
-3. Run the Spring Boot application:
-```bash
 mvn spring-boot:run
 ```
 
-The backend will start on `http://localhost:8080`
+Backend starts on `http://localhost:8080`
 
-Verify backend is running:
-```bash
-curl http://localhost:8080/api/ping
-```
+### Frontend Setup
 
-Expected response:
-```json
-{
-  "status": "success",
-  "message": "Event Management Backend is running"
-}
-```
-
-### 3. Frontend Setup
-
-1. Navigate to frontend directory:
+1. **Install dependencies**
 ```bash
 cd frontend
-```
-
-2. Install dependencies:
-```bash
 flutter pub get
 ```
 
-3. Open project in Android Studio
-
-4. Start Android Emulator from Android Studio
-
-5. Run the application:
+2. **Run on Android emulator**
 ```bash
 flutter run
 ```
 
-Or use Android Studio's run button.
+3. **Run on Chrome (for testing)**
+```bash
+flutter run -d chrome
+```
 
-## API Configuration
+## 🔧 API Configuration
 
 ### Android Emulator
-The Flutter app is configured to connect to the backend using:
-```
-http://10.0.2.2:8080/api
-```
+The app automatically uses `http://10.0.2.2:8080/api` (maps to host's localhost)
 
-`10.0.2.2` is the special IP address that maps to `localhost` on the host machine from the Android emulator.
-
-### Physical Android Device
-If testing on a physical device connected to the same network:
-
-1. Find your computer's local IP address:
-   - Windows: `ipconfig`
-   - Mac/Linux: `ifconfig`
-
-2. Update `lib/services/api_client.dart`:
+### Physical Device
+Update `lib/services/api_client.dart`:
 ```dart
-static const String baseUrl = 'http://YOUR_LOCAL_IP:8080/api';
+return 'http://YOUR_LOCAL_IP:8080/api';
 ```
 
-Replace `YOUR_LOCAL_IP` with your actual IP (e.g., `http://192.168.1.100:8080/api`)
+### Web (Chrome)
+Uses `http://localhost:8080/api`
 
-## Testing Phase 0
+## 📡 API Endpoints
 
-### Verification Steps
+### Phase 0
+- `GET /api/ping` - Health check
 
-1. **Backend**: Spring Boot starts successfully ✓
-2. **Database**: MySQL connection established ✓
-3. **API Endpoint**: `/api/ping` responds correctly ✓
-4. **Flutter**: App runs successfully ✓
-5. **Integration**: Flutter → Spring Boot → MySQL communication works ✓
+### Phase 1 (Upcoming)
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `GET /api/auth/profile` - Get profile
+- `PUT /api/auth/profile` - Update profile
 
-### Testing the Integration
+### Phase 2+
+- Event CRUD operations
+- Booking management
+- Payment processing
+- QR code operations
+- Analytics queries
 
-**Option 1: Windows Desktop (Recommended for Phase 0)**
-1. Start MySQL server
-2. Run Spring Boot backend: `cd backend && mvn spring-boot:run`
-3. Run Flutter on Windows: `cd frontend && flutter run -d windows`
-4. Click "Test Backend Connection" button
-5. Verify "Connected successfully" message appears
+## 🧪 Testing
 
-**Option 2: Android Emulator (For Phase 4+)**
-1. Start MySQL server
-2. Run Spring Boot backend
-3. Launch Flutter app in Android Studio
-4. Click "Test Backend Connection" button
-5. Verify "Connected successfully" message appears
+### Backend
+```bash
+mvn test
+```
 
-**Note**: If you encounter Gradle network issues with Android, use Windows Desktop for now. See `QUICK_START.md` for details.
+### Frontend
+```bash
+flutter test
+```
 
-## Development Workflow
+### API Testing
+```bash
+curl http://localhost:8080/api/ping
+```
 
-This project uses:
-- **Kiro** - For code development and editing
-- **Android Studio** - For running and testing Flutter application
+## 🚀 Deployment
 
-### Typical workflow:
-1. Modify code using Kiro
-2. Save changes
-3. Use Android Studio to run/test the Flutter app on Android emulator
-4. For backend changes, restart Spring Boot application
+### Backend
+```bash
+mvn package
+java -jar target/event-management-backend-0.0.1-SNAPSHOT.jar
+```
 
-## Phase 0 Completion Checklist
+### Frontend
+```bash
+flutter build apk --release
+```
 
-- [x] Spring Boot project initialized with Maven
-- [x] MySQL database created and connected
-- [x] Base package structure created (controller/service/repository/entity/dto/config/exception)
-- [x] Global exception handler configured
-- [x] Spring Security basic configuration
-- [x] CORS configuration for API access
-- [x] Test endpoint `/api/ping` implemented
-- [x] Flutter project created with GetX
-- [x] Folder structure organized (bindings/controllers/views/services/models/routes/widgets)
-- [x] API client service implemented
-- [x] GetX routing configured
-- [x] Home screen with backend connectivity test
-- [x] End-to-end communication verified
+## 📊 Database Schema
 
-## Next Steps
+### Core Entities
+- **User** - Account and role management
+- **Event** - Event listings and details
+- **Booking** - Ticket purchases
+- **Payment** - Razorpay transactions
+- **CheckIn** - QR scan records
+- **Notification** - In-app notifications
+- **Referral** - Referral tracking
+- **WalletTransaction** - Points ledger
+- **Review** - Event ratings
 
-Phase 0 is complete. The foundation is established for:
-- Phase 1: Authentication & Profiles (JWT, user registration/login)
-- Phase 2: Event Management (create/browse events)
-- Phase 3: Ticket Booking (capacity tracking)
-- Phase 4: Payments & QR Entry (Razorpay integration)
-- Phase 5: Organizer Dashboard & Admin Panel
-- Phase 6: Notifications, Referrals & Wallet
-- Phase 7: Reviews, Analytics & AI Recommendations
+## 🔐 Security
 
-## Troubleshooting
+- JWT-based stateless authentication
+- BCrypt password hashing
+- CORS configuration
+- Spring Security integration
+- Signed QR tokens (HMAC)
+- Server-side payment verification
+- Role-based access control
 
-### Backend Issues
+## 🎯 Development Workflow
 
-**MySQL Connection Failed**
+1. **Code**: Kiro AI or any IDE
+2. **Backend**: `mvn spring-boot:run`
+3. **Frontend**: `flutter run` or Android Studio
+4. **Database**: MySQL Workbench or CLI
+5. **Version Control**: Git
+
+## 🐛 Troubleshooting
+
+### Backend won't start
 - Verify MySQL is running
-- Check credentials in `application.properties`
-- Ensure database `event_management` exists
+- Check port 8080 is free
+- Verify database credentials
 
-**Port 8080 Already in Use**
-- Change port in `application.properties`: `server.port=8081`
+### Flutter build fails
+```bash
+flutter clean
+flutter pub get
+flutter run
+```
 
-### Flutter Issues
+### Android Gradle timeout
+- Use mobile hotspot
+- Wait for initial Gradle download (5-10 min)
+- Use Android Studio's built-in Gradle
 
-**Cannot Connect to Backend**
-- Verify backend is running on `http://localhost:8080`
-- For emulator, ensure using `10.0.2.2` not `localhost`
-- Check firewall settings
+## 📝 License
 
-**Build Errors**
-- Run `flutter clean`
-- Run `flutter pub get`
-- Restart IDE
+This is an academic project for educational purposes.
 
-## Project Team
+## 👥 Team
 
 SDP Lab Project - Event Management Application
 
-## License
+## 📮 Contact
 
-This is an academic project for educational purposes.
+GitHub: [@PANTH1101](https://github.com/PANTH1101)
+
+## 🗺️ Roadmap
+
+- [x] Phase 0: Project Setup
+- [ ] Phase 1: Authentication & Profiles
+- [ ] Phase 2: Event Management
+- [ ] Phase 3: Ticket Booking
+- [ ] Phase 4: Payments & QR Entry
+- [ ] Phase 5: Dashboards
+- [ ] Phase 6: Notifications & Wallet
+- [ ] Phase 7: Analytics & AI
+
+---
+
+**Current Status**: Phase 0 Complete ✅
