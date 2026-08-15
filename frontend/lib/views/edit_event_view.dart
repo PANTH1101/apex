@@ -44,7 +44,7 @@ class _EditEventViewState extends State<EditEventView> {
     'Technology', 'Music', 'Sports', 'Entertainment', 'Education',
     'Business', 'Art', 'Food & Drink', 'Health', 'Other',
   ];
-  static const List<String> _statuses = ['DRAFT', 'PUBLISHED', 'CANCELLED'];
+  static const List<String> _statuses = ['PUBLISHED', 'DRAFT', 'CANCELLED'];
 
   bool _initialized = false;
 

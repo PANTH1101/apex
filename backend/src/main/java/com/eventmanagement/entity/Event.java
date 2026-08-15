@@ -78,7 +78,7 @@ public class Event {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private EventStatus status = EventStatus.DRAFT;
+    private EventStatus status = EventStatus.PUBLISHED;
 
     @Column(length = 512)
     private String imageUrl;

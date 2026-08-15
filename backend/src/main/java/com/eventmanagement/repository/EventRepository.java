@@ -21,17 +21,20 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     /**
      * Attendee discovery query.
      *
-     * Returns only PUBLISHED events ordered by startDateTime ascending (soonest first).
+     * Returns only PUBLISHED and UPCOMING events ordered by startDateTime ascending (soonest first).
      * All filter parameters are optional — passing null skips that filter.
      *
      * keyword   : case-insensitive LIKE match against title, description, category, venue, city
      * category  : exact match (case-insensitive)
      * startDate : event.startDateTime >= startDate
      * endDate   : event.startDateTime <= endDate
+     *
+     * IMPORTANT: Only returns events where startDateTime >= CURRENT_TIMESTAMP (upcoming events only)
      */
     @Query("""
         SELECT e FROM Event e
         WHERE e.status = :status
+          AND e.startDateTime >= CURRENT_TIMESTAMP
           AND (:keyword IS NULL OR :keyword = ''
                OR LOWER(e.title)       LIKE LOWER(CONCAT('%', :keyword, '%'))
                OR LOWER(e.description) LIKE LOWER(CONCAT('%', :keyword, '%'))
