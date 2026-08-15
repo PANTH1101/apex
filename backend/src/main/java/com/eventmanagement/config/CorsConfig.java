@@ -17,6 +17,11 @@ public class CorsConfig {
                         .allowedOrigins("*")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*");
+                // Allow Flutter to load uploaded images cross-origin
+                registry.addMapping("/uploads/**")
+                        .allowedOrigins("*")
+                        .allowedMethods("GET")
+                        .allowedHeaders("*");
             }
         };
     }

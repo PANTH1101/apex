@@ -17,42 +17,53 @@ public class EventResponse {
     private String venue;
     private String address;
     private String city;
+
+    // Registration period
+    private LocalDateTime registrationStartDateTime;
+    private LocalDateTime registrationEndDateTime;
+
+    // Event schedule
     private LocalDateTime startDateTime;
-    private LocalDateTime endDateTime;
+    private LocalDateTime endDateTime; // nullable
+
     private BigDecimal ticketPrice;
     private Integer capacity;
     private Integer availableTickets;
     private EventStatus status;
+    private String imageUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     public EventResponse() {
     }
 
-    // Factory method — consistent with Phase 1 UserResponse.fromUser() pattern
     public static EventResponse fromEvent(Event event) {
-        EventResponse response = new EventResponse();
-        response.id = event.getId();
-        response.organizerId = event.getOrganizer().getId();
-        response.organizerName = event.getOrganizer().getName();
-        response.title = event.getTitle();
-        response.description = event.getDescription();
-        response.category = event.getCategory();
-        response.venue = event.getVenue();
-        response.address = event.getAddress();
-        response.city = event.getCity();
-        response.startDateTime = event.getStartDateTime();
-        response.endDateTime = event.getEndDateTime();
-        response.ticketPrice = event.getTicketPrice();
-        response.capacity = event.getCapacity();
-        response.availableTickets = event.getAvailableTickets();
-        response.status = event.getStatus();
-        response.createdAt = event.getCreatedAt();
-        response.updatedAt = event.getUpdatedAt();
-        return response;
+        EventResponse r = new EventResponse();
+        r.id = event.getId();
+        r.organizerId = event.getOrganizer().getId();
+        r.organizerName = event.getOrganizer().getName();
+        r.title = event.getTitle();
+        r.description = event.getDescription();
+        r.category = event.getCategory();
+        r.venue = event.getVenue();
+        r.address = event.getAddress();
+        r.city = event.getCity();
+        r.registrationStartDateTime = event.getRegistrationStartDateTime();
+        r.registrationEndDateTime = event.getRegistrationEndDateTime();
+        r.startDateTime = event.getStartDateTime();
+        r.endDateTime = event.getEndDateTime(); // may be null
+        r.ticketPrice = event.getTicketPrice();
+        r.capacity = event.getCapacity();
+        r.availableTickets = event.getAvailableTickets();
+        r.status = event.getStatus();
+        r.imageUrl = event.getImageUrl();
+        r.createdAt = event.getCreatedAt();
+        r.updatedAt = event.getUpdatedAt();
+        return r;
     }
 
-    // Getters and Setters
+    // ── Getters and Setters ───────────────────────────────────────────────────
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -80,6 +91,12 @@ public class EventResponse {
     public String getCity() { return city; }
     public void setCity(String city) { this.city = city; }
 
+    public LocalDateTime getRegistrationStartDateTime() { return registrationStartDateTime; }
+    public void setRegistrationStartDateTime(LocalDateTime v) { this.registrationStartDateTime = v; }
+
+    public LocalDateTime getRegistrationEndDateTime() { return registrationEndDateTime; }
+    public void setRegistrationEndDateTime(LocalDateTime v) { this.registrationEndDateTime = v; }
+
     public LocalDateTime getStartDateTime() { return startDateTime; }
     public void setStartDateTime(LocalDateTime startDateTime) { this.startDateTime = startDateTime; }
 
@@ -97,6 +114,9 @@ public class EventResponse {
 
     public EventStatus getStatus() { return status; }
     public void setStatus(EventStatus status) { this.status = status; }
+
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

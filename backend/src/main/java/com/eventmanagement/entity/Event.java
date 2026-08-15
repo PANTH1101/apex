@@ -45,12 +45,22 @@ public class Event {
     @Column(nullable = false, length = 100)
     private String city;
 
-    @NotNull(message = "Start date/time is required")
+    // ── Registration period (REQUIRED) ────────────────────────────────────────
+    @NotNull(message = "Registration start date/time is required")
+    @Column(nullable = false)
+    private LocalDateTime registrationStartDateTime;
+
+    @NotNull(message = "Registration end date/time is required")
+    @Column(nullable = false)
+    private LocalDateTime registrationEndDateTime;
+
+    // ── Event schedule ────────────────────────────────────────────────────────
+    @NotNull(message = "Event start date/time is required")
     @Column(nullable = false)
     private LocalDateTime startDateTime;
 
-    @NotNull(message = "End date/time is required")
-    @Column(nullable = false)
+    // endDateTime is intentionally nullable — event end time is optional
+    @Column(nullable = true)
     private LocalDateTime endDateTime;
 
     @NotNull(message = "Ticket price is required")
@@ -70,6 +80,9 @@ public class Event {
     @Column(nullable = false, length = 20)
     private EventStatus status = EventStatus.DRAFT;
 
+    @Column(length = 512)
+    private String imageUrl;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -78,136 +91,69 @@ public class Event {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    // Constructors
     public Event() {
     }
 
-    // Getters and Setters
-    public Long getId() {
-        return id;
+    // ── Getters and Setters ───────────────────────────────────────────────────
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public User getOrganizer() { return organizer; }
+    public void setOrganizer(User organizer) { this.organizer = organizer; }
+
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
+
+    public String getVenue() { return venue; }
+    public void setVenue(String venue) { this.venue = venue; }
+
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
+
+    public String getCity() { return city; }
+    public void setCity(String city) { this.city = city; }
+
+    public LocalDateTime getRegistrationStartDateTime() { return registrationStartDateTime; }
+    public void setRegistrationStartDateTime(LocalDateTime registrationStartDateTime) {
+        this.registrationStartDateTime = registrationStartDateTime;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public LocalDateTime getRegistrationEndDateTime() { return registrationEndDateTime; }
+    public void setRegistrationEndDateTime(LocalDateTime registrationEndDateTime) {
+        this.registrationEndDateTime = registrationEndDateTime;
     }
 
-    public User getOrganizer() {
-        return organizer;
-    }
+    public LocalDateTime getStartDateTime() { return startDateTime; }
+    public void setStartDateTime(LocalDateTime startDateTime) { this.startDateTime = startDateTime; }
 
-    public void setOrganizer(User organizer) {
-        this.organizer = organizer;
-    }
+    public LocalDateTime getEndDateTime() { return endDateTime; }
+    public void setEndDateTime(LocalDateTime endDateTime) { this.endDateTime = endDateTime; }
 
-    public String getTitle() {
-        return title;
-    }
+    public BigDecimal getTicketPrice() { return ticketPrice; }
+    public void setTicketPrice(BigDecimal ticketPrice) { this.ticketPrice = ticketPrice; }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+    public Integer getCapacity() { return capacity; }
+    public void setCapacity(Integer capacity) { this.capacity = capacity; }
 
-    public String getDescription() {
-        return description;
-    }
+    public Integer getAvailableTickets() { return availableTickets; }
+    public void setAvailableTickets(Integer availableTickets) { this.availableTickets = availableTickets; }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    public EventStatus getStatus() { return status; }
+    public void setStatus(EventStatus status) { this.status = status; }
 
-    public String getCategory() {
-        return category;
-    }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
-    public void setCategory(String category) {
-        this.category = category;
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public String getVenue() {
-        return venue;
-    }
-
-    public void setVenue(String venue) {
-        this.venue = venue;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getCity() {
-        return city;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
-    public LocalDateTime getStartDateTime() {
-        return startDateTime;
-    }
-
-    public void setStartDateTime(LocalDateTime startDateTime) {
-        this.startDateTime = startDateTime;
-    }
-
-    public LocalDateTime getEndDateTime() {
-        return endDateTime;
-    }
-
-    public void setEndDateTime(LocalDateTime endDateTime) {
-        this.endDateTime = endDateTime;
-    }
-
-    public BigDecimal getTicketPrice() {
-        return ticketPrice;
-    }
-
-    public void setTicketPrice(BigDecimal ticketPrice) {
-        this.ticketPrice = ticketPrice;
-    }
-
-    public Integer getCapacity() {
-        return capacity;
-    }
-
-    public void setCapacity(Integer capacity) {
-        this.capacity = capacity;
-    }
-
-    public Integer getAvailableTickets() {
-        return availableTickets;
-    }
-
-    public void setAvailableTickets(Integer availableTickets) {
-        this.availableTickets = availableTickets;
-    }
-
-    public EventStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(EventStatus status) {
-        this.status = status;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

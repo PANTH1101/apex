@@ -44,6 +44,9 @@ dependencies:
   # Secure storage for JWT tokens
   flutter_secure_storage: 9.2.4
 
+  # Image picker for event image selection (Phase 2D)
+  image_picker: ^1.1.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

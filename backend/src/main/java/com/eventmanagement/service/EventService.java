@@ -4,6 +4,7 @@ import com.eventmanagement.dto.CreateEventRequest;
 import com.eventmanagement.dto.EventResponse;
 import com.eventmanagement.dto.UpdateEventRequest;
 import com.eventmanagement.entity.Event;
+import com.eventmanagement.entity.EventStatus;
 import com.eventmanagement.entity.User;
 import com.eventmanagement.exception.ForbiddenException;
 import com.eventmanagement.exception.ResourceNotFoundException;
@@ -12,7 +13,10 @@ import com.eventmanagement.repository.UserRepository;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,21 +25,28 @@ public class EventService {
 
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
+    private final ImageStorageService imageStorageService;
 
-    public EventService(EventRepository eventRepository, UserRepository userRepository) {
-        this.eventRepository = eventRepository;
-        this.userRepository = userRepository;
+    public EventService(EventRepository eventRepository,
+                        UserRepository userRepository,
+                        ImageStorageService imageStorageService) {
+        this.eventRepository     = eventRepository;
+        this.userRepository      = userRepository;
+        this.imageStorageService = imageStorageService;
     }
 
-    /**
-     * Create a new event. The organizer is always resolved from the authenticated
-     * user's email — the client cannot supply an arbitrary organizerId.
-     */
+    // ── Create ────────────────────────────────────────────────────────────────
+
     @Transactional
     public EventResponse createEvent(CreateEventRequest request, String organizerEmail) {
         User organizer = resolveUser(organizerEmail);
 
-        validateDateRange(request.getStartDateTime(), request.getEndDateTime());
+        validateSchedule(
+                request.getRegistrationStartDateTime(),
+                request.getRegistrationEndDateTime(),
+                request.getStartDateTime(),
+                request.getEndDateTime()
+        );
 
         Event event = new Event();
         event.setOrganizer(organizer);
@@ -45,29 +56,26 @@ public class EventService {
         event.setVenue(request.getVenue());
         event.setAddress(request.getAddress());
         event.setCity(request.getCity());
+        event.setRegistrationStartDateTime(request.getRegistrationStartDateTime());
+        event.setRegistrationEndDateTime(request.getRegistrationEndDateTime());
         event.setStartDateTime(request.getStartDateTime());
-        event.setEndDateTime(request.getEndDateTime());
+        event.setEndDateTime(request.getEndDateTime()); // may be null
         event.setTicketPrice(request.getTicketPrice());
         event.setCapacity(request.getCapacity());
-        // On creation availableTickets == capacity (no bookings exist yet)
         event.setAvailableTickets(request.getCapacity());
 
-        Event saved = eventRepository.save(event);
-        return EventResponse.fromEvent(saved);
+        return EventResponse.fromEvent(eventRepository.save(event));
     }
 
-    /**
-     * Get a single event by ID. Accessible to any authenticated user.
-     */
+    // ── Read single ───────────────────────────────────────────────────────────
+
     @Transactional(readOnly = true)
     public EventResponse getEventById(Long eventId) {
-        Event event = findEventOrThrow(eventId);
-        return EventResponse.fromEvent(event);
+        return EventResponse.fromEvent(findEventOrThrow(eventId));
     }
 
-    /**
-     * Get all events that belong to the authenticated organizer.
-     */
+    // ── Read organizer list ───────────────────────────────────────────────────
+
     @Transactional(readOnly = true)
     public List<EventResponse> getOrganizerEvents(String organizerEmail) {
         User organizer = resolveUser(organizerEmail);
@@ -77,21 +85,14 @@ public class EventService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Update an event. Only the owning organizer may do this.
-     * Capacity assumption: since no bookings exist in Phase 2A,
-     * availableTickets is adjusted proportionally when capacity changes.
-     */
+    // ── Update ────────────────────────────────────────────────────────────────
+
     @Transactional
     public EventResponse updateEvent(Long eventId, UpdateEventRequest request, String organizerEmail) {
         Event event = findEventOrThrow(eventId);
         assertOwnership(event, organizerEmail);
 
-        // Validate date range if either date is being updated
-        var newStart = request.getStartDateTime() != null ? request.getStartDateTime() : event.getStartDateTime();
-        var newEnd = request.getEndDateTime() != null ? request.getEndDateTime() : event.getEndDateTime();
-        validateDateRange(newStart, newEnd);
-
+        // Apply field updates first so we validate the final intended state
         if (request.getTitle() != null && !request.getTitle().isBlank()) {
             event.setTitle(request.getTitle());
         }
@@ -110,18 +111,30 @@ public class EventService {
         if (request.getCity() != null && !request.getCity().isBlank()) {
             event.setCity(request.getCity());
         }
+        if (request.getRegistrationStartDateTime() != null) {
+            event.setRegistrationStartDateTime(request.getRegistrationStartDateTime());
+        }
+        if (request.getRegistrationEndDateTime() != null) {
+            event.setRegistrationEndDateTime(request.getRegistrationEndDateTime());
+        }
         if (request.getStartDateTime() != null) {
             event.setStartDateTime(request.getStartDateTime());
         }
-        if (request.getEndDateTime() != null) {
+
+        // endDateTime: three cases
+        //   removeEndDateTime=true  → clear to null
+        //   endDateTime != null     → set new value
+        //   otherwise               → leave unchanged
+        if (request.isRemoveEndDateTime()) {
+            event.setEndDateTime(null);
+        } else if (request.getEndDateTime() != null) {
             event.setEndDateTime(request.getEndDateTime());
         }
+
         if (request.getTicketPrice() != null) {
             event.setTicketPrice(request.getTicketPrice());
         }
         if (request.getCapacity() != null) {
-            // Phase 2A: no bookings exist, so availableTickets == capacity always.
-            // Set availableTickets = new capacity to keep the invariant.
             event.setCapacity(request.getCapacity());
             event.setAvailableTickets(request.getCapacity());
         }
@@ -129,21 +142,70 @@ public class EventService {
             event.setStatus(request.getStatus());
         }
 
-        Event saved = eventRepository.save(event);
-        return EventResponse.fromEvent(saved);
+        // Validate the resulting schedule
+        validateSchedule(
+                event.getRegistrationStartDateTime(),
+                event.getRegistrationEndDateTime(),
+                event.getStartDateTime(),
+                event.getEndDateTime()
+        );
+
+        return EventResponse.fromEvent(eventRepository.save(event));
     }
 
-    /**
-     * Delete an event. Only the owning organizer may do this.
-     */
+    // ── Delete ────────────────────────────────────────────────────────────────
+
     @Transactional
     public void deleteEvent(Long eventId, String organizerEmail) {
         Event event = findEventOrThrow(eventId);
         assertOwnership(event, organizerEmail);
+        imageStorageService.delete(event.getImageUrl());
         eventRepository.delete(event);
     }
 
-    // ── Private helpers ────────────────────────────────────────────────────────
+    // ── Image upload ──────────────────────────────────────────────────────────
+
+    @Transactional
+    public EventResponse uploadImage(Long eventId, MultipartFile file, String organizerEmail)
+            throws IOException {
+        Event event = findEventOrThrow(eventId);
+        assertOwnership(event, organizerEmail);
+
+        String newImageUrl = imageStorageService.store(file);
+        imageStorageService.delete(event.getImageUrl());
+        event.setImageUrl(newImageUrl);
+        return EventResponse.fromEvent(eventRepository.save(event));
+    }
+
+    // ── Image remove ──────────────────────────────────────────────────────────
+
+    @Transactional
+    public EventResponse removeImage(Long eventId, String organizerEmail) {
+        Event event = findEventOrThrow(eventId);
+        assertOwnership(event, organizerEmail);
+        imageStorageService.delete(event.getImageUrl());
+        event.setImageUrl(null);
+        return EventResponse.fromEvent(eventRepository.save(event));
+    }
+
+    // ── Attendee discovery ────────────────────────────────────────────────────
+
+    @Transactional(readOnly = true)
+    public List<EventResponse> discoverEvents(
+            String keyword, String category,
+            LocalDateTime startDate, LocalDateTime endDate) {
+
+        String kw  = (keyword  != null && keyword.isBlank())  ? null : keyword;
+        String cat = (category != null && category.isBlank()) ? null : category;
+
+        return eventRepository
+                .findDiscoverableEvents(EventStatus.PUBLISHED, kw, cat, startDate, endDate)
+                .stream()
+                .map(EventResponse::fromEvent)
+                .collect(Collectors.toList());
+    }
+
+    // ── Private helpers ───────────────────────────────────────────────────────
 
     private Event findEventOrThrow(Long eventId) {
         return eventRepository.findById(eventId)
@@ -155,19 +217,51 @@ public class EventService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
     }
 
-    /**
-     * Ownership check: compares the event's organizer with the authenticated user.
-     * The authenticated email comes from the verified JWT — never from the client body.
-     */
     private void assertOwnership(Event event, String authenticatedEmail) {
         if (!event.getOrganizer().getEmail().equals(authenticatedEmail)) {
             throw new ForbiddenException("You do not have permission to modify this event");
         }
     }
 
-    private void validateDateRange(java.time.LocalDateTime start, java.time.LocalDateTime end) {
-        if (end != null && start != null && !end.isAfter(start)) {
-            throw new IllegalArgumentException("End date/time must be after start date/time");
+    /**
+     * Validates the four-field schedule:
+     *
+     *   1. registrationStart < registrationEnd
+     *   2. registrationEnd  <= eventStart
+     *   3. if eventEnd != null: eventStart < eventEnd
+     *
+     * All four fields that participate in a rule must be non-null for that
+     * rule to fire — this allows partial updates to pass through gracefully
+     * when only some dates are being changed.
+     */
+    private void validateSchedule(
+            LocalDateTime regStart,
+            LocalDateTime regEnd,
+            LocalDateTime eventStart,
+            LocalDateTime eventEnd) {
+
+        // Rule 1: registration start < registration end
+        if (regStart != null && regEnd != null) {
+            if (!regEnd.isAfter(regStart)) {
+                throw new IllegalArgumentException(
+                        "Registration end must be after registration start");
+            }
+        }
+
+        // Rule 2: registration end <= event start
+        if (regEnd != null && eventStart != null) {
+            if (eventStart.isBefore(regEnd)) {
+                throw new IllegalArgumentException(
+                        "Registration end must be on or before the event start date/time");
+            }
+        }
+
+        // Rule 3: event start < event end (only when end is provided)
+        if (eventEnd != null && eventStart != null) {
+            if (!eventEnd.isAfter(eventStart)) {
+                throw new IllegalArgumentException(
+                        "Event end date/time must be after event start date/time");
+            }
         }
     }
 }

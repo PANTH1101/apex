@@ -46,156 +46,146 @@ class HomeView extends GetView<HomeController> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
-              const Text(
-                'Phase 1 - Authentication Complete ✅',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 48),
               Obx(() {
-                if (controller.isLoading.value) {
-                  return const Column(
-                    children: [
-                      CircularProgressIndicator(),
-                      SizedBox(height: 16),
-                      Text('Testing backend connection...'),
-                    ],
-                  );
-                }
+                final user = authController.currentUser.value;
+                if (user == null) return const SizedBox.shrink();
+                return Text(
+                  'Welcome, ${user.name}',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey,
+                  ),
+                  textAlign: TextAlign.center,
+                );
+              }),
+              const SizedBox(height: 48),
 
-                if (controller.connectionStatus.value.isNotEmpty) {
-                  return Card(
-                    elevation: 4,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                controller.isConnected.value
-                                    ? Icons.check_circle
-                                    : Icons.error,
-                                color: controller.isConnected.value
-                                    ? Colors.green
-                                    : Colors.red,
-                              ),
-                              const SizedBox(width: 8),
-                              const Text(
-                                'Backend Status',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            controller.connectionStatus.value,
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: controller.isConnected.value
-                                  ? Colors.green
-                                  : Colors.red,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          if (controller.backendMessage.value.isNotEmpty) ...[
-                            const SizedBox(height: 8),
-                            Text(
-                              controller.backendMessage.value,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.black87,
-                              ),
-                            ),
-                          ],
-                        ],
+              // Organizer: My Events button
+              Obx(() {
+                final user = authController.currentUser.value;
+                if (user == null || user.role != 'ORGANIZER') {
+                  return const SizedBox.shrink();
+                }
+                return Column(
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: () => Get.toNamed(AppRoutes.myEvents),
+                      icon: const Icon(Icons.event_note),
+                      label: const Text('My Events'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size(double.infinity, 52),
+                        textStyle: const TextStyle(fontSize: 16),
                       ),
                     ),
-                  );
-                }
-
-                return const SizedBox.shrink();
+                    const SizedBox(height: 16),
+                  ],
+                );
               }),
-              const SizedBox(height: 32),
+
+              // Attendee: Discover Events button
+              Obx(() {
+                final user = authController.currentUser.value;
+                if (user == null || user.role != 'ATTENDEE') {
+                  return const SizedBox.shrink();
+                }
+                return Column(
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: () => Get.toNamed(AppRoutes.eventDiscovery),
+                      icon: const Icon(Icons.explore),
+                      label: const Text('Discover Events'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size(double.infinity, 52),
+                        textStyle: const TextStyle(fontSize: 16),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                );
+              }),
+
               ElevatedButton.icon(
-                onPressed: controller.testBackendConnection,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Test Backend Connection'),
+                onPressed: () => Get.toNamed(AppRoutes.profile),
+                icon: const Icon(Icons.person),
+                label: const Text('My Profile'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 16,
-                  ),
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.blue,
+                  side: const BorderSide(color: Colors.blue),
+                  minimumSize: const Size(double.infinity, 52),
                   textStyle: const TextStyle(fontSize: 16),
                 ),
               ),
-              const SizedBox(height: 24),
-              Obx(() => authController.isAuthenticated.value
-                  ? OutlinedButton.icon(
-                      onPressed: () => Get.toNamed(AppRoutes.profile),
-                      icon: const Icon(Icons.person),
-                      label: const Text('My Profile'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.blue,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 32,
-                          vertical: 16,
-                        ),
-                        textStyle: const TextStyle(fontSize: 16),
+              const SizedBox(height: 16),
+
+              // Backend connection test
+              Obx(() {
+                if (controller.isLoading.value) {
+                  return const SizedBox(
+                    height: 52,
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+                if (controller.connectionStatus.value.isNotEmpty) {
+                  return Column(
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            controller.isConnected.value
+                                ? Icons.check_circle
+                                : Icons.error,
+                            color: controller.isConnected.value
+                                ? Colors.green
+                                : Colors.red,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              controller.connectionStatus.value,
+                              style: TextStyle(
+                                color: controller.isConnected.value
+                                    ? Colors.green
+                                    : Colors.red,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    )
-                  : OutlinedButton.icon(
-                      onPressed: () => Get.toNamed(AppRoutes.login),
-                      icon: const Icon(Icons.login),
-                      label: const Text('Go to Login'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.blue,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 32,
-                          vertical: 16,
-                        ),
-                        textStyle: const TextStyle(fontSize: 16),
-                      ),
-                    )),
-              const SizedBox(height: 12),
-              Obx(() => authController.isAuthenticated.value
-                  ? OutlinedButton.icon(
-                      onPressed: () => authController.logout(),
-                      icon: const Icon(Icons.logout),
-                      label: const Text('Logout'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.red,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 32,
-                          vertical: 16,
-                        ),
-                        textStyle: const TextStyle(fontSize: 16),
-                      ),
-                    )
-                  : OutlinedButton.icon(
-                      onPressed: () => Get.toNamed(AppRoutes.register),
-                      icon: const Icon(Icons.person_add),
-                      label: const Text('Go to Register'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.blue,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 32,
-                          vertical: 16,
-                        ),
-                        textStyle: const TextStyle(fontSize: 16),
-                      ),
-                    )),
+                      const SizedBox(height: 8),
+                    ],
+                  );
+                }
+                return const SizedBox.shrink();
+              }),
+
+              OutlinedButton.icon(
+                onPressed: controller.testBackendConnection,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Test Backend Connection'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.blue,
+                  minimumSize: const Size(double.infinity, 48),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              OutlinedButton.icon(
+                onPressed: () => authController.logout(),
+                icon: const Icon(Icons.logout),
+                label: const Text('Logout'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.red,
+                  minimumSize: const Size(double.infinity, 48),
+                ),
+              ),
             ],
           ),
         ),

@@ -37,6 +37,8 @@ public class SecurityConfig {
                 // Public endpoints
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/ping").permitAll()
+                // Static uploads — images must be publicly readable for display
+                .requestMatchers("/uploads/**").permitAll()
                 // Event endpoints — authenticated for GET, ORGANIZER for write
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/events/**").authenticated()
                 .requestMatchers("/api/events/**").hasAnyRole("ORGANIZER", "ADMIN")
