@@ -37,6 +37,9 @@ public class SecurityConfig {
                 // Public endpoints
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/ping").permitAll()
+                // Event endpoints — authenticated for GET, ORGANIZER for write
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/events/**").authenticated()
+                .requestMatchers("/api/events/**").hasAnyRole("ORGANIZER", "ADMIN")
                 // Protected endpoints
                 .requestMatchers("/api/users/**").authenticated()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
