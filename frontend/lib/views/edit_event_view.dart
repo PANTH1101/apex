@@ -10,7 +10,7 @@ class EditEventView extends StatefulWidget {
 
   @override
   State<EditEventView> createState() => _EditEventViewState();
-}
+} 
 
 class _EditEventViewState extends State<EditEventView> {
   final _formKey = GlobalKey<FormState>();
