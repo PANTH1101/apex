@@ -118,27 +118,43 @@ class OrganizerEventDetailsView extends GetView<EventController> {
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: Obx(() => ElevatedButton.icon(
-                                onPressed: controller.isDeleting.value
-                                    ? null
-                                    : () => _confirmDelete(context, event.id),
-                                icon: const Icon(Icons.delete),
-                                label: controller.isDeleting.value
-                                    ? const SizedBox(
-                                        height: 18, width: 18,
-                                        child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            color: Colors.white))
-                                    : const Text('Delete'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 14),
-                                ),
-                              )),
+                          child: ElevatedButton.icon(
+                            onPressed: () => Get.toNamed(AppRoutes.ticketTypes),
+                            icon: const Icon(Icons.confirmation_number),
+                            label: const Text('Ticket Types'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                            ),
+                          ),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: 12),
+                    
+                    // Delete button - separate row
+                    SizedBox(
+                      width: double.infinity,
+                      child: Obx(() => ElevatedButton.icon(
+                            onPressed: controller.isDeleting.value
+                                ? null
+                                : () => _confirmDelete(context, event.id),
+                            icon: const Icon(Icons.delete),
+                            label: controller.isDeleting.value
+                                ? const SizedBox(
+                                    height: 18, width: 18,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white))
+                                : const Text('Delete Event'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 14),
+                            ),
+                          )),
                     ),
                     const SizedBox(height: 24),
                   ],

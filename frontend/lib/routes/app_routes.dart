@@ -12,6 +12,9 @@ abstract class AppRoutes {
   static const eventDetails = '/events/details';
   static const editEvent = '/events/edit';
 
+  // Phase 3A — Ticket Types Management
+  static const ticketTypes = '/events/ticket-types';
+
   // Phase 2C — Attendee Event Discovery
   static const eventDiscovery = '/events/discover';
   static const attendeeEventDetails = '/events/attendee/details';

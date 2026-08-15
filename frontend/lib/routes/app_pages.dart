@@ -3,6 +3,7 @@ import '../bindings/auth_binding.dart';
 import '../bindings/discovery_binding.dart';
 import '../bindings/event_binding.dart';
 import '../bindings/home_binding.dart';
+import '../bindings/ticket_type_binding.dart';
 import '../views/attendee_event_details_view.dart';
 import '../views/create_event_view.dart';
 import '../views/edit_event_view.dart';
@@ -15,6 +16,7 @@ import '../views/organizer_event_details_view.dart';
 import '../views/profile_view.dart';
 import '../views/register_view.dart';
 import '../views/splash_view.dart';
+import '../views/ticket_types_view.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -69,6 +71,12 @@ class AppPages {
       name: AppRoutes.editEvent,
       page: () => const EditEventView(),
       binding: EventBinding(),
+    ),
+    // Phase 3A — Ticket Types Management
+    GetPage(
+      name: AppRoutes.ticketTypes,
+      page: () => const TicketTypesView(),
+      bindings: [EventBinding(), TicketTypeBinding()],
     ),
     // Phase 2C — Attendee Event Discovery
     GetPage(

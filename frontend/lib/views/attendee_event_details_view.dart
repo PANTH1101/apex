@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/discovery_controller.dart';
+import '../controllers/ticket_type_controller.dart';
 import '../widgets/event_image.dart';
 
 class AttendeeEventDetailsView extends GetView<DiscoveryController> {
@@ -80,12 +81,8 @@ class AttendeeEventDetailsView extends GetView<DiscoveryController> {
                           _fmtDt(event.endDateTime!)),
                     const Divider(),
 
-                    // Tickets
-                    _Row(Icons.currency_rupee, 'Ticket Price',
-                        '₹${event.ticketPrice.toStringAsFixed(2)}'),
-                    _Row(Icons.people, 'Capacity', '${event.capacity}'),
-                    _Row(Icons.confirmation_number, 'Available Tickets',
-                        '${event.availableTickets}'),
+                    // Ticket Types
+                    _TicketTypesSection(eventId: event.id),
                     const SizedBox(height: 32),
                   ],
                 ),
@@ -178,5 +175,196 @@ class _StatusBadge extends StatelessWidget {
           style: TextStyle(
               fontWeight: FontWeight.bold, fontSize: 13, color: fg)),
     );
+  }
+}
+
+class _TicketTypesSection extends StatefulWidget {
+  final int eventId;
+  const _TicketTypesSection({required this.eventId});
+
+  @override
+  State<_TicketTypesSection> createState() => _TicketTypesSectionState();
+}
+
+class _TicketTypesSectionState extends State<_TicketTypesSection> {
+  final TicketTypeController _ticketController = Get.put(TicketTypeController());
+  String? _selectedTicketTypeId;
+
+  @override
+  void initState() {
+    super.initState();
+    _ticketController.loadTicketTypes(widget.eventId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(top: 4, bottom: 8),
+          child: Text('Ticket Options',
+              style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue,
+                  letterSpacing: 0.5)),
+        ),
+        Obx(() {
+          if (_ticketController.isLoading.value) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+
+          if (_ticketController.errorMessage.value.isNotEmpty) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    const Icon(Icons.error_outline, color: Colors.red),
+                    const SizedBox(height: 8),
+                    Text(_ticketController.errorMessage.value,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Colors.red)),
+                  ],
+                ),
+              ),
+            );
+          }
+
+          if (_ticketController.ticketTypes.isEmpty) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    Icon(Icons.confirmation_number_outlined,
+                        size: 48, color: Colors.grey),
+                    SizedBox(height: 8),
+                    Text('No ticket options available',
+                        style: TextStyle(color: Colors.grey)),
+                  ],
+                ),
+              ),
+            );
+          }
+
+          return Column(
+            children: _ticketController.ticketTypes.map((ticketType) {
+              final isSelected = _selectedTicketTypeId == ticketType.id.toString();
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                child: InkWell(
+                  onTap: () {
+                    setState(() {
+                      _selectedTicketTypeId = isSelected ? null : ticketType.id.toString();
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: isSelected ? Colors.blue : Colors.grey.shade300,
+                        width: isSelected ? 2 : 1,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                      color: isSelected ? Colors.blue.shade50 : Colors.white,
+                    ),
+                    child: Row(
+                      children: [
+                        Radio<String>(
+                          value: ticketType.id.toString(),
+                          groupValue: _selectedTicketTypeId,
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedTicketTypeId = value;
+                            });
+                          },
+                          activeColor: Colors.blue,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                ticketType.name,
+                                style: const TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                              if (ticketType.description != null) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  ticketType.description!,
+                                  style: const TextStyle(
+                                      fontSize: 14, color: Colors.grey),
+                                ),
+                              ],
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Text(
+                                    '₹${ticketType.price.toStringAsFixed(0)}',
+                                    style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.green),
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    '${ticketType.availableQuantity} available',
+                                    style: const TextStyle(
+                                        fontSize: 14, color: Colors.blue),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          );
+        }),
+        const SizedBox(height: 16),
+        // Note: In Phase 3A, we only show selection UI foundation
+        // No actual booking functionality yet
+        if (_selectedTicketTypeId != null)
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade50,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.blue.shade200),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.info_outline, color: Colors.blue, size: 20),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Booking functionality will be available soon!',
+                    style: TextStyle(color: Colors.blue, fontSize: 14),
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  @override
+  void dispose() {
+    Get.delete<TicketTypeController>();
+    super.dispose();
   }
 }
