@@ -1,18 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../controllers/auth_controller.dart';
 import '../controllers/home_controller.dart';
+import '../routes/app_routes.dart';
 
 class HomeView extends GetView<HomeController> {
   const HomeView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final authController = Get.find<AuthController>();
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Event Management App'),
+        title: const Text('APEX Events'),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.person),
+            onPressed: () => Get.toNamed(AppRoutes.profile),
+            tooltip: 'Profile',
+          ),
+        ],
       ),
       body: Center(
         child: Padding(
@@ -27,19 +38,21 @@ class HomeView extends GetView<HomeController> {
               ),
               const SizedBox(height: 24),
               const Text(
-                'Event Management',
+                'APEX Event Management',
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                 ),
+                textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
               const Text(
-                'Phase 0 - Project Setup',
+                'Phase 1 - Authentication Complete ✅',
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.grey,
                 ),
+                textAlign: TextAlign.center,
               ),
               const SizedBox(height: 48),
               Obx(() {
@@ -72,13 +85,11 @@ class HomeView extends GetView<HomeController> {
                                     : Colors.red,
                               ),
                               const SizedBox(width: 8),
-                              Flexible(
-                                child: Text(
-                                  'Backend Status',
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                              const Text(
+                                'Backend Status',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ],
@@ -93,6 +104,7 @@ class HomeView extends GetView<HomeController> {
                                   : Colors.red,
                               fontWeight: FontWeight.w500,
                             ),
+                            textAlign: TextAlign.center,
                           ),
                           if (controller.backendMessage.value.isNotEmpty) ...[
                             const SizedBox(height: 8),
@@ -128,6 +140,62 @@ class HomeView extends GetView<HomeController> {
                   textStyle: const TextStyle(fontSize: 16),
                 ),
               ),
+              const SizedBox(height: 24),
+              Obx(() => authController.isAuthenticated.value
+                  ? OutlinedButton.icon(
+                      onPressed: () => Get.toNamed(AppRoutes.profile),
+                      icon: const Icon(Icons.person),
+                      label: const Text('My Profile'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.blue,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 16,
+                        ),
+                        textStyle: const TextStyle(fontSize: 16),
+                      ),
+                    )
+                  : OutlinedButton.icon(
+                      onPressed: () => Get.toNamed(AppRoutes.login),
+                      icon: const Icon(Icons.login),
+                      label: const Text('Go to Login'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.blue,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 16,
+                        ),
+                        textStyle: const TextStyle(fontSize: 16),
+                      ),
+                    )),
+              const SizedBox(height: 12),
+              Obx(() => authController.isAuthenticated.value
+                  ? OutlinedButton.icon(
+                      onPressed: () => authController.logout(),
+                      icon: const Icon(Icons.logout),
+                      label: const Text('Logout'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.red,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 16,
+                        ),
+                        textStyle: const TextStyle(fontSize: 16),
+                      ),
+                    )
+                  : OutlinedButton.icon(
+                      onPressed: () => Get.toNamed(AppRoutes.register),
+                      icon: const Icon(Icons.person_add),
+                      label: const Text('Go to Register'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.blue,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 16,
+                        ),
+                        textStyle: const TextStyle(fontSize: 16),
+                      ),
+                    )),
             ],
           ),
         ),

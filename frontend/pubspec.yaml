@@ -40,6 +40,9 @@ dependencies:
   
   # HTTP client for API communication
   http: ^1.1.0
+  
+  # Secure storage for JWT tokens
+  flutter_secure_storage: 9.2.4
 
 dev_dependencies:
   flutter_test:
